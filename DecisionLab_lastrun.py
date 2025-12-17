@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 This experiment was created using PsychoPy3 Experiment Builder (v2025.1.1),
-    on December 16, 2025, at 16:00
+    on December 17, 2025, at 00:23
 If you publish work using this script the most relevant publication is:
 
     Peirce J, Gray JR, Simpson S, MacAskill M, Höchenberger R, Sogo H, Kastman E, Lindeløv JK. (2019) 
@@ -1070,7 +1070,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
     CROSSHAIR_RANDOM_VALUES = [2, 3, 4]
     TIMEOUT_SCREEN_DURATION = 1.5  # Timeout screen duration (same across all blocks)
     ACTUAL_POINTS_DURATION = 2.0
-    DECISION_TIMEOUT_DURATION = 4.0  # Maximum time for decision making (configurable)
+    DECISION_TIMEOUT_DURATION = 2.0  # Maximum time for decision making (seconds)
     
     # Store decision timeout in globals for use in decision making routines
     globals()['DECISION_TIMEOUT_DURATION'] = DECISION_TIMEOUT_DURATION
@@ -1533,70 +1533,70 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
     print(f"Created {len(decision_pairs)} unique pairs")
     
     # Build list of decision trials with counterbalancing (4 repetitions per pair = 60 total)
-    # Counterbalancing ensures 4 conditions per fruit pair:
-    # 1. First fruit1 on left, then fruit2 on right, final: fruit1 left, fruit2 right
-    # 2. First fruit2 on right, then fruit1 on left, final: fruit1 left, fruit2 right
-    # 3. First fruit1 on left, then fruit2 on right, final: fruit2 left, fruit1 right
-    # 4. First fruit2 on right, then fruit1 on left, final: fruit2 left, fruit1 right
-    # This counterbalances: which fruit appears first, which side first appears on, and final positions
-    # Result: 30 left-first, 30 right-first (2 left + 2 right per pair × 15 pairs = 30 each)
+    # For each pair (A,B), create 4 reps so that:
+    # - Each fruit appears 2x on left and 2x on right (final choice display)
+    # - Each fruit appears 2x as the first stimulus and 2x as the second stimulus
+    # Rep template:
+    # rep 1: left=A right=B, first=A (left)
+    # rep 2: left=A right=B, first=B (right)
+    # rep 3: left=B right=A, first=A (right)
+    # rep 4: left=B right=A, first=B (left)
     
     decision_block = []
     for fruit1, fruit2 in decision_pairs:
-        left_val = fruit_values[fruit1]
-        right_val = fruit_values[fruit2]
-        correct_side = "left" if left_val > right_val else "right"
-        
-        # Condition 1: First fruit1 on left, then fruit2 on right, final: fruit1 left, fruit2 right
+        val1 = fruit_values[fruit1]
+        val2 = fruit_values[fruit2]
+    
+        # rep 1
         decision_block.append({
             "leftFruit": fruit1,
             "rightFruit": fruit2,
-            "firstFruit": fruit1,  # fruit1 appears first
-            "firstSide": "left",   # on left side
-            "secondFruit": fruit2,  # fruit2 appears second
-            "secondSide": "right",  # on right side
-            "leftVal": left_val,
-            "rightVal": right_val,
-            "correct": correct_side
+            "firstFruit": fruit1,
+            "firstSide": "left",
+            "secondFruit": fruit2,
+            "secondSide": "right",
+            "leftVal": val1,
+            "rightVal": val2,
+            "correct": "left" if val1 > val2 else "right",
         })
-        
-        # Condition 2: First fruit2 on right, then fruit1 on left, final: fruit1 left, fruit2 right
+    
+        # rep 2
         decision_block.append({
             "leftFruit": fruit1,
             "rightFruit": fruit2,
-            "firstFruit": fruit2,  # fruit2 appears first
-            "firstSide": "right",  # on right side
-            "secondFruit": fruit1,  # fruit1 appears second
-            "secondSide": "left",   # on left side
-            "leftVal": left_val,
-            "rightVal": right_val,
-            "correct": correct_side
+            "firstFruit": fruit2,
+            "firstSide": "right",
+            "secondFruit": fruit1,
+            "secondSide": "left",
+            "leftVal": val1,
+            "rightVal": val2,
+            "correct": "left" if val1 > val2 else "right",
         })
-        
-        # Condition 3: First fruit1 on left, then fruit2 on right, final: fruit2 left, fruit1 right
+    
+        # rep 3
         decision_block.append({
             "leftFruit": fruit2,
             "rightFruit": fruit1,
-            "firstFruit": fruit1,  # fruit1 appears first
-            "firstSide": "left",   # on left side
-            "secondFruit": fruit2,  # fruit2 appears second
-            "secondSide": "right",  # on right side
-            "leftVal": right_val,
-            "rightVal": left_val,
-            "correct": "right" if correct_side == "left" else "left"
+            "firstFruit": fruit1,
+            "firstSide": "right",
+            "secondFruit": fruit2,
+            "secondSide": "left",
+            "leftVal": val2,
+            "rightVal": val1,
+            "correct": "left" if val2 > val1 else "right",
         })
-        
-        # Condition 4: First fruit2 on right, then fruit1 on left, final: fruit2 left, fruit1 right
+    
+        # rep 4
         decision_block.append({
             "leftFruit": fruit2,
             "rightFruit": fruit1,
-            "firstFruit": fruit2,  # fruit2 appears first
-            "firstSide": "right",  # on right side
-            "secondFruit": fruit1,  # fruit1 appears second
-            "secondSide": "left",   # on left side
-            "leftVal": right_val,
-            "rightVal": left_val,
-            "correct": "right" if correct_side == "left" else "left"
+            "firstFruit": fruit2,
+            "firstSide": "left",
+            "secondFruit": fruit1,
+            "secondSide": "right",
+            "leftVal": val2,
+            "rightVal": val1,
+            "correct": "left" if val2 > val1 else "right",
         })
     
     # Verify counterbalancing: should have 30 left-first and 30 right-first
@@ -2640,7 +2640,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
     # set up handler to look after randomisation of conditions etc
     practiceDecisionLoop = data.TrialHandler2(
         name='practiceDecisionLoop',
-        nReps=0.0, 
+        nReps=3.0, 
         method='random', 
         extraInfo=expInfo, 
         originPath=-1, 
@@ -4136,7 +4136,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             practiceDecisionLoop.status = STARTED
         thisExp.nextEntry()
         
-    # completed 0.0 repeats of 'practiceDecisionLoop'
+    # completed 3.0 repeats of 'practiceDecisionLoop'
     practiceDecisionLoop.status = FINISHED
     
     if thisSession is not None:
@@ -4784,7 +4784,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
     
     # --- Run Routine "startTaskBlock3" ---
     startTaskBlock3.forceEnded = routineForceEnded = not continueRoutine
-    while continueRoutine and routineTimer.getTime() < 1.0:
+    while continueRoutine and routineTimer.getTime() < 10.0:
         # get current time
         t = routineTimer.getTime()
         tThisFlip = win.getFutureFlipTime(clock=routineTimer)
@@ -4815,7 +4815,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
         # if text_26 is stopping this frame...
         if text_26.status == STARTED:
             # is it time to stop? (based on global clock, using actual start)
-            if tThisFlipGlobal > text_26.tStartRefresh + 1-frameTolerance:
+            if tThisFlipGlobal > text_26.tStartRefresh + 10-frameTolerance:
                 # keep track of stop time/frame for later
                 text_26.tStop = t  # not accounting for scr refresh
                 text_26.tStopRefresh = tThisFlipGlobal  # on global time
@@ -4871,13 +4871,13 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
     elif startTaskBlock3.forceEnded:
         routineTimer.reset()
     else:
-        routineTimer.addTime(-1.000000)
+        routineTimer.addTime(-10.000000)
     thisExp.nextEntry()
     
     # set up handler to look after randomisation of conditions etc
     decisionLoop = data.TrialHandler2(
         name='decisionLoop',
-        nReps=0.0, 
+        nReps=2.0, 
         method='sequential', 
         extraInfo=expInfo, 
         originPath=-1, 
@@ -5781,6 +5781,8 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             choice = ""
             decision_start_time = time.time()
             decision_timed_out = False
+            # Clear prior RT so timeouts can't accidentally inherit a previous trial's RT
+            globals()['decision_rt'] = None
             
             # Store in globals for use in EachFrame
             globals()['choice'] = choice
@@ -5828,7 +5830,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
         decisionMaking.tStart = globalClock.getTime(format='float')
         decisionMaking.status = STARTED
         thisExp.addData('decisionMaking.started', decisionMaking.tStart)
-        decisionMaking.maxDuration = None
+        decisionMaking.maxDuration = 2
         # keep track of which components have finished
         decisionMakingComponents = decisionMaking.components
         for thisComponent in decisionMaking.components:
@@ -5845,7 +5847,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
         
         # --- Run Routine "decisionMaking" ---
         decisionMaking.forceEnded = routineForceEnded = not continueRoutine
-        while continueRoutine and routineTimer.getTime() < 4.0:
+        while continueRoutine and routineTimer.getTime() < 2.0:
             # if trial has changed, end Routine now
             if hasattr(thisDecisionLoop, 'status') and thisDecisionLoop.status == STOPPING:
                 continueRoutine = False
@@ -5855,6 +5857,10 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             tThisFlipGlobal = win.getFutureFlipTime(clock=None)
             frameN = frameN + 1  # number of completed frames (so 0 is the first frame)
             # update/draw components on each frame
+            # is it time to end the Routine? (based on local clock)
+            if tThisFlip > decisionMaking.maxDuration-frameTolerance:
+                decisionMaking.maxDurationReached = True
+                continueRoutine = False
             
             # *text_question_1* updates
             
@@ -5976,7 +5982,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             # if mouse_2 is stopping this frame...
             if mouse_2.status == STARTED:
                 # is it time to stop? (based on global clock, using actual start)
-                if tThisFlipGlobal > mouse_2.tStartRefresh + 4-frameTolerance:
+                if tThisFlipGlobal > mouse_2.tStartRefresh + 2-frameTolerance:
                     # keep track of stop time/frame for later
                     mouse_2.tStop = t  # not accounting for scr refresh
                     mouse_2.tStopRefresh = tThisFlipGlobal  # on global time
@@ -6121,6 +6127,8 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
                                 continueRoutine = False
             
             
+            
+            
             # check for quit (typically the Esc key)
             if defaultKeyboard.getKeys(keyList=["escape"]):
                 thisExp.status = FINISHED
@@ -6174,9 +6182,9 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
         
         # Get choice, decision_rt, and decision_timed_out from globals (set in EachFrame)
         choice = globals().get('choice', "")
-        # Get timeout duration from globals (set in EachFrame) or use default
-        decision_timeout_duration = globals().get('decision_timeout_duration', 4.0)
-        decision_rt = globals().get('decision_rt', decision_timeout_duration)  # Default to timeout duration if not set
+        # Response limit (seconds): global default
+        decision_response_limit = globals().get('DECISION_TIMEOUT_DURATION', 2.0)
+        decision_rt = globals().get('decision_rt', None)
         decision_timed_out = globals().get('decision_timed_out', False)
         
         # Get leftFile and rightFile from current trial
@@ -6209,18 +6217,18 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
         # Determine correctness
         was_correct = (choice == correct) if choice else False
         
-        # Convert reaction time to milliseconds
-        # If timed out and RT wasn't set, use the timeout duration
-        if decision_timed_out and (decision_rt is None or decision_rt == 0):
-            decision_rt_value = decision_timeout_duration
+        # Decision RT value (seconds)
+        if decision_timed_out:
+            decision_rt_value = decision_response_limit
         else:
-            decision_rt_value = decision_rt if decision_rt is not None else decision_timeout_duration
+            decision_rt_value = decision_rt if decision_rt is not None else 0.0
         decision_rt_ms = int(decision_rt_value * 1000)
         
-        # Calculate timeout duration for timeout screen (1.5 seconds if timed out, 0 otherwise)
-        decision_timeout_duration = 1.5 if decision_timed_out else 0.0
-        globals()['decision_timeout_duration'] = decision_timeout_duration
-        print(f"DEBUG decisionMakingEndRoutine: decision_timed_out={decision_timed_out}, decision_timeout_duration={decision_timeout_duration}")
+        # Timeout screen duration (seconds): 1.5 if timed out, else 0
+        timeout_screen_duration = globals().get('TIMEOUT_SCREEN_DURATION', 1.5)
+        decision_timeout_screen_duration = timeout_screen_duration if decision_timed_out else 0.0
+        globals()['decision_timeout_duration'] = decision_timeout_screen_duration
+        print(f"DEBUG decisionMakingEndRoutine: decision_timed_out={decision_timed_out}, decision_timeout_screen_duration={decision_timeout_screen_duration}")
         
         # Log the decision data
         thisExp.addData("decision_trial", decision_index + 1)
@@ -6233,7 +6241,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
         thisExp.addData("was_correct", was_correct)
         thisExp.addData("decision_rt", decision_rt_value)
         thisExp.addData("decision_timed_out", decision_timed_out)
-        thisExp.addData("decision_timeout_duration", decision_timeout_duration)
+        thisExp.addData("decision_timeout_duration", decision_timeout_screen_duration)
         
         # Log decision trial to CSV
         try:
@@ -6282,9 +6290,42 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             # The choice should be the numerical ID of the chosen fruit
             choice_num = left_stimulus_num if choice == "left" else (right_stimulus_num if choice == "right" else "")
             
-            # Get data logger and log decision
+            # Defer CSV logging until after ITI durations are computed (so we can log ITI_1/2/3)
+        except Exception as e:
+            print(f"Error logging decision data: {e}")
+        
+        # Calculate ITI 3 duration (crosshair after decision)
+        # Requirement:
+        # - ITI_3 should be 2/3/4 seconds on normal trials (do NOT subtract RT)
+        # - On timed-out trials, show timeout screen for 1.5s, then crosshair for (2/3/4 - 1.5)s
+        import random
+        timeout_screen_duration = globals().get('TIMEOUT_SCREEN_DURATION', 1.5)
+        iti3_total_values = [2, 3, 4]
+        iti3_total = random.choice(iti3_total_values)
+        
+        if decision_timed_out:
+            iti3_duration = max(0.0, iti3_total - timeout_screen_duration)
+            print(f"ITI 3 (timeout): total={iti3_total}s, timeout_screen={timeout_screen_duration}s, crosshair={iti3_duration:.2f}s")
+        else:
+            iti3_duration = float(iti3_total)
+            print(f"ITI 3 (normal): crosshair={iti3_duration:.2f}s (no RT subtraction)")
+        
+        globals()['iti3_duration'] = iti3_duration
+        
+        # Log ITI durations
+        iti1_duration = globals().get('iti1_duration', 0)
+        iti2_duration = globals().get('iti2_duration', 0)
+        thisExp.addData("iti1_duration", iti1_duration)
+        thisExp.addData("iti2_duration", iti2_duration)
+        thisExp.addData("iti3_duration", iti3_duration)
+        thisExp.addData("decision_response_time", decision_rt_value)
+        
+        # Log decision trial to CSV (includes ITIs and timeout metadata)
+        try:
             data_logger = globals().get('data_logger', None)
             if data_logger:
+                decision_response_limit_s = globals().get('DECISION_TIMEOUT_DURATION', 2.0)
+                timeout_screen_duration_s = globals().get('decision_timeout_duration', 0.0)
                 data_logger.log_decision_trial(
                     trial_num=decision_index + 1,
                     block_id=block_id,
@@ -6298,50 +6339,18 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
                     left_avg_points=left_avg,
                     right_avg_points=right_avg,
                     choice=choice_num if choice_num else "",
-                    reaction_time_ms=decision_rt_ms
+                    reaction_time_ms=decision_rt_ms,
+                    iti1_duration=iti1_duration,
+                    iti2_duration=iti2_duration,
+                    iti3_duration=iti3_duration,
+                    decision_timed_out=decision_timed_out,
+                    decision_response_limit_s=decision_response_limit_s,
+                    decision_timeout_screen_duration_s=timeout_screen_duration_s,
                 )
         except Exception as e:
-            print(f"Error logging decision data: {e}")
+            print(f"Error logging decision data (with ITIs): {e}")
         
-        # Calculate ITI 3 duration (crosshair after decision)
-        # Logic: timeout (1.5s) + crosshair should total 2/3/4s (same as learning)
-        # So: crosshair_duration = rand(2,3,4) - timeout_screen_duration
-        # This ensures timeout + crosshair = 2/3/4s total
-        # Set this BEFORE decisionITI3 routine starts so it's available for Builder duration
-        import random
-        response_time = decision_rt_value
-        timeout_screen_duration = globals().get('TIMEOUT_SCREEN_DURATION', 1.5)  # 1.5s timeout screen
-        crosshair_total_values = [2, 3, 4]  # Total duration (timeout + crosshair)
-        rand_crosshair_total = random.choice(crosshair_total_values)
-        
-        if decision_timed_out:
-            # If timed out: crosshair_duration = (2/3/4) - timeout_screen_duration
-            # This ensures timeout (1.5s) + crosshair = 2/3/4s total
-            iti3_duration = max(0, rand_crosshair_total - timeout_screen_duration)
-            print(f"ITI 3 (timeout case): crosshair = {rand_crosshair_total} - {timeout_screen_duration} = {iti3_duration:.2f}s (total: {rand_crosshair_total}s)")
-        else:
-            # Normal case: (base_duration - response_time) + rand(1,2,3)
-            # Base duration should match the decision timeout duration
-            base_duration = decision_timeout_duration
-            rand3 = random.choice([1, 2, 3])
-            iti3_duration = (base_duration - response_time) + rand3
-            print(f"ITI 3 (normal case): ({base_duration} - {response_time:.2f}) + {rand3} = {iti3_duration:.2f}s")
-        
-        # Ensure iti3_duration is in globals so Builder can access it
-        if 'iti3_duration' not in globals():
-            globals()['iti3_duration'] = iti3_duration
-        
-        print(f"ITI 3: (2 - {response_time:.2f}) + {rand3} = {iti3_duration:.2f} seconds (timeout: {decision_timed_out})")
-        
-        # Log ITI durations
-        iti1_duration = globals().get('iti1_duration', 0)
-        iti2_duration = globals().get('iti2_duration', 0)
-        thisExp.addData("iti1_duration", iti1_duration)
-        thisExp.addData("iti2_duration", iti2_duration)
-        thisExp.addData("iti3_duration", iti3_duration)
-        thisExp.addData("decision_response_time", response_time)
-        
-        print(f"Decision {decision_index + 1}: {choice} (correct: {correct}, accurate: {was_correct}, RT: {response_time:.2f}s, timed_out: {decision_timed_out})")
+        print(f"Decision {decision_index + 1}: {choice} (correct: {correct}, accurate: {was_correct}, RT: {decision_rt_value:.2f}s, timed_out: {decision_timed_out})")
         print(f"Decision EndRoutine: RT={decision_rt_value:.3f}s={decision_rt_ms}ms, responded_in_time={not decision_timed_out}, timed_out={decision_timed_out}")
         
         # Move to next trial
@@ -6409,7 +6418,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
         elif decisionMaking.forceEnded:
             routineTimer.reset()
         else:
-            routineTimer.addTime(-4.000000)
+            routineTimer.addTime(-2.000000)
         
         # --- Prepare to start Routine "decisionTimeout" ---
         # create an object to store info about Routine decisionTimeout
@@ -6445,11 +6454,6 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             if 'text_decision_timeout' in locals():
                 text_decision_timeout.opacity = 0
                 text_decision_timeout.setAutoDraw(False)
-        
-        
-        
-        
-        
         
         
         
@@ -6754,7 +6758,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             decisionLoop.status = STARTED
         thisExp.nextEntry()
         
-    # completed 0.0 repeats of 'decisionLoop'
+    # completed 2.0 repeats of 'decisionLoop'
     decisionLoop.status = FINISHED
     
     if thisSession is not None:
@@ -7619,7 +7623,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
     # set up handler to look after randomisation of conditions etc
     practiceTrials = data.TrialHandler2(
         name='practiceTrials',
-        nReps=0.0, 
+        nReps=3.0, 
         method='sequential', 
         extraInfo=expInfo, 
         originPath=-1, 
@@ -8447,7 +8451,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             practiceTrials.status = STARTED
         thisExp.nextEntry()
         
-    # completed 0.0 repeats of 'practiceTrials'
+    # completed 3.0 repeats of 'practiceTrials'
     practiceTrials.status = FINISHED
     
     if thisSession is not None:
@@ -9178,7 +9182,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
     
     # --- Run Routine "startTask" ---
     startTask.forceEnded = routineForceEnded = not continueRoutine
-    while continueRoutine and routineTimer.getTime() < 1.0:
+    while continueRoutine and routineTimer.getTime() < 10.0:
         # get current time
         t = routineTimer.getTime()
         tThisFlip = win.getFutureFlipTime(clock=routineTimer)
@@ -9209,7 +9213,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
         # if text_4 is stopping this frame...
         if text_4.status == STARTED:
             # is it time to stop? (based on global clock, using actual start)
-            if tThisFlipGlobal > text_4.tStartRefresh + 1-frameTolerance:
+            if tThisFlipGlobal > text_4.tStartRefresh + 10-frameTolerance:
                 # keep track of stop time/frame for later
                 text_4.tStop = t  # not accounting for scr refresh
                 text_4.tStopRefresh = tThisFlipGlobal  # on global time
@@ -9265,7 +9269,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
     elif startTask.forceEnded:
         routineTimer.reset()
     else:
-        routineTimer.addTime(-1.000000)
+        routineTimer.addTime(-10.000000)
     thisExp.nextEntry()
     
     # set up handler to look after randomisation of conditions etc
@@ -9928,25 +9932,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
                 block_id = 1 if blockType == "gain" else 2
                 block_name = "rewards" if blockType == "gain" else "punishment"
             
-            # Get data logger and log trial
-            data_logger = globals().get('data_logger', None)
-            if data_logger:
-                # Get slider starting value from globals (set in trialBeginRoutine)
-                slider_starting_value = globals().get('slider_starting_value', None)
-                
-                data_logger.log_learning_trial(
-                    trial_num=trial_num_within_block,
-                    block_id=block_id,
-                    block_name=block_name,
-                    stimulus_identity=fruit_name,
-                    stimulus_avg_points=baselineR,
-                    actual_points=trueVal,
-                    prediction_value=int(rating),
-                    reaction_time_ms=reaction_time_ms,
-                    responded_in_time=responded_in_time,
-                    trial_timed_out=trial_timed_out,
-                    slider_starting_value=slider_starting_value
-                )
+            # Defer CSV logging until after timing durations are computed (so we can log crosshair durations)
         except Exception as e:
             print(f"Error logging trial data: {e}")
         
@@ -10034,6 +10020,33 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             print(f"  rand1={rand1}, crosshair1={rand1} - {TIMEOUT_SCREEN_DURATION} = {crosshair1_duration:.2f}s")
             print(f"  actualPoints={ACTUAL_POINTS_DURATION}s (from config)")
             print(f"  rand2={rand2}, crosshair2={rand2}s")
+        
+        # Log trial to CSV (includes crosshair durations)
+        try:
+            data_logger = globals().get('data_logger', None)
+            if data_logger:
+                slider_starting_value = globals().get('slider_starting_value', None)
+                data_logger.log_learning_trial(
+                    trial_num=trial_num_within_block,
+                    block_id=block_id,
+                    block_name=block_name,
+                    stimulus_identity=fruit_name,
+                    stimulus_avg_points=baselineR,
+                    actual_points=trueVal,
+                    prediction_value=int(rating),
+                    reaction_time_ms=reaction_time_ms,
+                    responded_in_time=responded_in_time,
+                    trial_timed_out=trial_timed_out,
+                    slider_starting_value=slider_starting_value,
+                    crosshair1_duration=globals().get('crosshair1_duration', None),
+                    crosshair2_duration=globals().get('crosshair2_duration', None),
+                    crosshair1_rand=globals().get('crosshair1_rand', None),
+                    crosshair2_rand=globals().get('crosshair2_rand', None),
+                    timeout_duration=globals().get('timeout_duration', None),
+                    actual_points_duration=globals().get('actualPoints_duration', None),
+                )
+        except Exception as e:
+            print(f"Error logging trial data (with crosshair durations): {e}")
         
         # Check if we've completed the first block (halfway point)
         # This will trigger the transition screen before starting the second block
@@ -11947,7 +11960,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
         
         # --- Run Routine "crosshair2Block2" ---
         crosshair2Block2.forceEnded = routineForceEnded = not continueRoutine
-        while continueRoutine and routineTimer.getTime() < 1.0:
+        while continueRoutine and routineTimer.getTime() < 10.0:
             # if trial has changed, end Routine now
             if hasattr(thisLearningLoop, 'status') and thisLearningLoop.status == STOPPING:
                 continueRoutine = False
@@ -11981,7 +11994,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             # if text_crosshair2_block2 is stopping this frame...
             if text_crosshair2_block2.status == STARTED:
                 # is it time to stop? (based on global clock, using actual start)
-                if tThisFlipGlobal > text_crosshair2_block2.tStartRefresh + 1-frameTolerance:
+                if tThisFlipGlobal > text_crosshair2_block2.tStartRefresh + 10-frameTolerance:
                     # keep track of stop time/frame for later
                     text_crosshair2_block2.tStop = t  # not accounting for scr refresh
                     text_crosshair2_block2.tStopRefresh = tThisFlipGlobal  # on global time
@@ -12080,7 +12093,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
         elif crosshair2Block2.forceEnded:
             routineTimer.reset()
         else:
-            routineTimer.addTime(-1.000000)
+            routineTimer.addTime(-10.000000)
         # mark thisLearningLoop as finished
         if hasattr(thisLearningLoop, 'status'):
             thisLearningLoop.status = FINISHED

@@ -88,10 +88,13 @@ class DataLogger:
                 "timestamp": timestamp
             })
     
-    def log_learning_trial(self, trial_num, block_id, block_name, stimulus_identity, 
-                          stimulus_avg_points, actual_points, prediction_value, 
+    def log_learning_trial(self, trial_num, block_id, block_name, stimulus_identity,
+                          stimulus_avg_points, actual_points, prediction_value,
                           reaction_time_ms, responded_in_time, trial_timed_out,
-                          slider_starting_value=None):
+                          slider_starting_value=None,
+                          crosshair1_duration=None, crosshair2_duration=None,
+                          crosshair1_rand=None, crosshair2_rand=None,
+                          timeout_duration=None, actual_points_duration=None):
         """
         Log a learning trial
         
@@ -121,6 +124,13 @@ class DataLogger:
             "responded_in_time": responded_in_time,
             "trial_timed_out": trial_timed_out,
             "slider_starting_value": slider_starting_value,
+            # Timing (so you can reconstruct exact on-screen timing)
+            "crosshair1_rand": crosshair1_rand,
+            "crosshair1_duration": crosshair1_duration,
+            "actual_points_duration": actual_points_duration,
+            "crosshair2_rand": crosshair2_rand,
+            "crosshair2_duration": crosshair2_duration,
+            "timeout_duration": timeout_duration,
             "keypresses": self.learning_keypresses.copy()  # Copy keypress log
         }
         self.learning_data.append(trial_data)
@@ -132,7 +142,10 @@ class DataLogger:
     def log_decision_trial(self, trial_num, block_id, block_name, first_stimulus_id,
                           first_stimulus_side, left_stimulus_id, right_stimulus_id,
                           left_stimulus_num, right_stimulus_num, left_avg_points,
-                          right_avg_points, choice, reaction_time_ms):
+                          right_avg_points, choice, reaction_time_ms,
+                          iti1_duration=None, iti2_duration=None, iti3_duration=None,
+                          decision_timed_out=None, decision_response_limit_s=None,
+                          decision_timeout_screen_duration_s=None):
         """
         Log a decision making trial
         
@@ -165,7 +178,14 @@ class DataLogger:
             "left_avg_points": left_avg_points,
             "right_avg_points": right_avg_points,
             "choice": choice,
-            "reaction_time_ms": reaction_time_ms
+            "reaction_time_ms": reaction_time_ms,
+            # Timing (so you can reconstruct exact on-screen timing)
+            "iti1_duration": iti1_duration,
+            "iti2_duration": iti2_duration,
+            "iti3_duration": iti3_duration,
+            "decision_timed_out": decision_timed_out,
+            "decision_response_limit_s": decision_response_limit_s,
+            "decision_timeout_screen_duration_s": decision_timeout_screen_duration_s,
         }
         self.decision_data.append(decision_data)
     
@@ -207,7 +227,12 @@ class DataLogger:
                     "user_id", "trial_number", "block_id", "block_name",
                     "stimulus_identity", "stimulus_average_points", "actual_points",
                     "prediction_value", "reaction_time_ms", "responded_in_time", "trial_timed_out",
-                    "slider_starting_value", "keypress_sequence"  # Will contain all keypresses as JSON-like string
+                    "slider_starting_value",
+                    "crosshair1_rand", "crosshair1_duration",
+                    "actual_points_duration",
+                    "crosshair2_rand", "crosshair2_duration",
+                    "timeout_duration",
+                    "keypress_sequence"  # Will contain all keypresses as JSON-like string
                 ])
                 
                 # Data rows
@@ -231,6 +256,12 @@ class DataLogger:
                         trial['responded_in_time'],
                         trial['trial_timed_out'],
                         trial.get('slider_starting_value', None),  # Use .get() for backward compatibility
+                        trial.get('crosshair1_rand', None),
+                        trial.get('crosshair1_duration', None),
+                        trial.get('actual_points_duration', None),
+                        trial.get('crosshair2_rand', None),
+                        trial.get('crosshair2_duration', None),
+                        trial.get('timeout_duration', None),
                         keypress_str
                     ])
             print(f"Successfully saved learning data to {filepath} ({len(self.learning_data)} trials)")
@@ -337,7 +368,9 @@ class DataLogger:
                     "left_stimulus_id", "right_stimulus_id",
                     "left_stimulus_num", "right_stimulus_num",
                     "left_avg_points", "right_avg_points",
-                    "choice", "reaction_time_ms"
+                    "choice", "reaction_time_ms",
+                    "iti1_duration", "iti2_duration", "iti3_duration",
+                    "decision_timed_out", "decision_response_limit_s", "decision_timeout_screen_duration_s"
                 ])
                 
                 # Data rows
@@ -356,7 +389,13 @@ class DataLogger:
                         trial['left_avg_points'],
                         trial['right_avg_points'],
                         trial['choice'],
-                        trial['reaction_time_ms']
+                        trial['reaction_time_ms'],
+                        trial.get('iti1_duration', None),
+                        trial.get('iti2_duration', None),
+                        trial.get('iti3_duration', None),
+                        trial.get('decision_timed_out', None),
+                        trial.get('decision_response_limit_s', None),
+                        trial.get('decision_timeout_screen_duration_s', None),
                     ])
             print(f"Successfully saved decision data to {filepath} ({len(self.decision_data)} trials)")
         except (IOError, OSError, FileNotFoundError) as e:
@@ -393,7 +432,9 @@ class DataLogger:
                         "left_stimulus_id", "right_stimulus_id",
                         "left_stimulus_num", "right_stimulus_num",
                         "left_avg_points", "right_avg_points",
-                        "choice", "reaction_time_ms"
+                        "choice", "reaction_time_ms",
+                        "iti1_duration", "iti2_duration", "iti3_duration",
+                        "decision_timed_out", "decision_response_limit_s", "decision_timeout_screen_duration_s"
                     ])
                     for trial in self.decision_data:
                         writer.writerow([
@@ -403,7 +444,13 @@ class DataLogger:
                             trial['right_stimulus_id'], trial['left_stimulus_num'],
                             trial['right_stimulus_num'], trial['left_avg_points'],
                             trial['right_avg_points'], trial['choice'],
-                            trial['reaction_time_ms']
+                            trial['reaction_time_ms'],
+                            trial.get('iti1_duration', None),
+                            trial.get('iti2_duration', None),
+                            trial.get('iti3_duration', None),
+                            trial.get('decision_timed_out', None),
+                            trial.get('decision_response_limit_s', None),
+                            trial.get('decision_timeout_screen_duration_s', None),
                         ])
                 print(f"Saved to fallback location: {fallback_path}")
                 print(f"Please create {self.subject_dir} and move this file there")
