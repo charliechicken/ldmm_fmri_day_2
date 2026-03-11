@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 This experiment was created using PsychoPy3 Experiment Builder (v2026.1.1),
-    on March 09, 2026, at 19:00
+    on March 10, 2026, at 20:07
 If you publish work using this script the most relevant publication is:
 
     Peirce J, Gray JR, Simpson S, MacAskill M, Höchenberger R, Sogo H, Kastman E, Lindeløv JK. (2019) 
@@ -4935,6 +4935,16 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
                     image_left1.setAutoDraw(False)
             
             print(f"Decision {decision_index+1}: Showing {first_fruit} on {first_side} (2 seconds)")
+        
+            # Capture stimulus1 onset timestamp (scanner-relative)
+            scanner_clock = globals().get('scanner_clock', None)
+            if scanner_clock is not None:
+                stimulus1_onset_time = scanner_clock.getTime()
+                globals()['stimulus1_onset_time'] = stimulus1_onset_time
+                print(f"Stimulus 1 onset: {stimulus1_onset_time:.4f}s since scanner sync")
+            else:
+                globals()['stimulus1_onset_time'] = None
+                print("WARNING: scanner_clock not set — stimulus1_onset_time will be None")
         else:
             print("No more decision trials")
         
@@ -5334,6 +5344,16 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
                     image_left1_2.setAutoDraw(False)
             
             print(f"Decision {decision_index+1}: Showing {second_fruit} on {second_side} (2 seconds)")
+        
+            # Capture stimulus2 onset timestamp (scanner-relative)
+            scanner_clock = globals().get('scanner_clock', None)
+            if scanner_clock is not None:
+                stimulus2_onset_time = scanner_clock.getTime()
+                globals()['stimulus2_onset_time'] = stimulus2_onset_time
+                print(f"Stimulus 2 onset: {stimulus2_onset_time:.4f}s since scanner sync")
+            else:
+                globals()['stimulus2_onset_time'] = None
+                print("WARNING: scanner_clock not set — stimulus2_onset_time will be None")
         else:
             print("No more decision trials")
         
@@ -5806,6 +5826,18 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             # Debug: Show which fruits appeared where individually
             print(f"Decision {decision_index+1}: {first_fruit} (was on {first_side}) vs {second_fruit} (was on {second_side})")
             print(f"  Final positions: {leftFile} (left) vs {rightFile} (right), correct={correct}")
+        
+            # Capture both-fruits onset timestamp and reset choice_time (scanner-relative)
+            scanner_clock = globals().get('scanner_clock', None)
+            if scanner_clock is not None:
+                both_fruits_onset_time = scanner_clock.getTime()
+                globals()['both_fruits_onset_time'] = both_fruits_onset_time
+                globals()['choice_time'] = None  # Will be set when choice is made
+                print(f"Both fruits onset: {both_fruits_onset_time:.4f}s since scanner sync")
+            else:
+                globals()['both_fruits_onset_time'] = None
+                globals()['choice_time'] = None
+                print("WARNING: scanner_clock not set — both_fruits_onset_time will be None")
         else:
             # No more decision trials
             leftFile = "images/blank.png"
@@ -6070,6 +6102,9 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
                                 globals()['choice'] = choice
                                 globals()['decision_rt'] = decision_rt
                                 globals()['decision_timed_out'] = False
+                                sc = globals().get('scanner_clock', None)
+                                if sc:
+                                    globals()['choice_time'] = sc.getTime()
                                 print(f"Decision {decision_index+1}: Chose left (key 1, RT={decision_rt:.2f}s)")
                                 continueRoutine = False
                                 # Clear events after processing
@@ -6105,6 +6140,9 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
                                 globals()['choice'] = choice
                                 globals()['decision_rt'] = decision_rt
                                 globals()['decision_timed_out'] = False
+                                sc = globals().get('scanner_clock', None)
+                                if sc:
+                                    globals()['choice_time'] = sc.getTime()
                                 print(f"Decision {decision_index+1}: Chose left (mouse, RT={decision_rt:.2f}s)")
                                 continueRoutine = False
                             elif mouse_2.isPressedIn(image_right_right):
@@ -6114,6 +6152,9 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
                                 globals()['choice'] = choice
                                 globals()['decision_rt'] = decision_rt
                                 globals()['decision_timed_out'] = False
+                                sc = globals().get('scanner_clock', None)
+                                if sc:
+                                    globals()['choice_time'] = sc.getTime()
                                 print(f"Decision {decision_index+1}: Chose right (mouse, RT={decision_rt:.2f}s)")
                                 continueRoutine = False
             
