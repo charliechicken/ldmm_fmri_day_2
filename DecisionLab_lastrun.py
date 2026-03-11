@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 This experiment was created using PsychoPy3 Experiment Builder (v2026.1.1),
-    on March 11, 2026, at 01:36
+    on March 11, 2026, at 02:11
 If you publish work using this script the most relevant publication is:
 
     Peirce J, Gray JR, Simpson S, MacAskill M, Höchenberger R, Sogo H, Kastman E, Lindeløv JK. (2019) 
@@ -9426,7 +9426,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
     # set up handler to look after randomisation of conditions etc
     learningLoop = data.TrialHandler2(
         name='learningLoop',
-        nReps=4.0, 
+        nReps=2.0, 
         method='sequential', 
         extraInfo=expInfo, 
         originPath=-1, 
@@ -9700,27 +9700,14 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             pass
         
         # === LOG FRUIT ONSET TIMESTAMP (relative to scanner sync) ===
-        # scanner_clock is set/reset in scanner sync when user presses 5 (Block 1 and Block 2)
-        # Do NOT create a new clock here - that zeroes onset (e.g. Block 2 trial 1 getting ~0.02s)
+        # scanner_clock is created/reset in scanner sync routines when user presses 5
+        # NEVER create a new clock here - that zeroes Block 2 trial 1 onset
         scanner_clock = globals().get('scanner_clock', None) or getattr(thisExp, 'scanner_clock', None)
-        if scanner_clock is None:
-            # Only create fallback for Block 1 trial 1 (before first scanner sync); never for Block 2
-            if learning_block_index < trials_per_block:
-                try:
-                    import psychopy.core as psychopy_core
-                    globals()['scanner_clock'] = psychopy_core.Clock()
-                    scanner_clock = globals()['scanner_clock']
-                    scanner_clock.reset()
-                    print("WARNING: scanner_clock was not set — created fallback for Block 1 (use scanner sync to reset)")
-                except Exception as e:
-                    print(f"WARNING: Could not create scanner_clock: {e}")
-            else:
-                print("ERROR: scanner_clock is None for Block 2 — scanner sync should have set it. Fruit onset will be None.")
         if scanner_clock is not None:
             fruit_onset_time = scanner_clock.getTime()
         else:
             fruit_onset_time = None
-            print("WARNING: scanner_clock not set — fruit onset time will be None")
+            print("WARNING: scanner_clock not set — fruit onset will be None (ensure Block 1 and Block 2 scanner sync ran)")
         
         globals()['fruit_onset_time'] = fruit_onset_time
         globals()['first_response_time'] = None
@@ -11769,7 +11756,8 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
                 event.clearEvents()
             except:
                 pass
-            globals()['block2_setup_complete'] = True
+            # Do NOT set block2_setup_complete here - that causes crosshairBlock2, scannerWaitBlock2, crosshair2Block2 to skip!
+            # Only crosshair2Block2 EndRoutine should set it (after all transition routines run)
             globals()['scanner_block2_was_shown'] = False
             print("Block 2 scanner sync complete")
             # Clock was reset in EachFrame when "5" was pressed; ensure it exists as backup
@@ -12378,7 +12366,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             learningLoop.status = STARTED
         thisExp.nextEntry()
         
-    # completed 4.0 repeats of 'learningLoop'
+    # completed 2.0 repeats of 'learningLoop'
     learningLoop.status = FINISHED
     
     if thisSession is not None:
