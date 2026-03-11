@@ -171,6 +171,10 @@ class DataLogger:
             choice: User's choice ("left" or "right")
             reaction_time_ms: Reaction time in milliseconds
         """
+        # DEBUG: log incoming values for root-cause tracing
+        print(f"DEBUG log_decision_trial: trial={trial_num} iti3_base={iti3_base} iti3_duration={iti3_duration} stim1={stimulus1_onset_time} stim2={stimulus2_onset_time} RT_ms={reaction_time_ms}")
+        if stimulus2_onset_time is not None and stimulus2_onset_time < 0.1:
+            print(f"DEBUG log_decision_trial: stimulus2_onset NEAR ZERO - will write to CSV")
         decision_data = {
             "user_id": self.user_id,
             "trial_number": trial_num,

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 This experiment was created using PsychoPy3 Experiment Builder (v2026.1.1),
-    on March 10, 2026, at 23:17
+    on March 11, 2026, at 01:36
 If you publish work using this script the most relevant publication is:
 
     Peirce J, Gray JR, Simpson S, MacAskill M, Höchenberger R, Sogo H, Kastman E, Lindeløv JK. (2019) 
@@ -2568,7 +2568,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
     # set up handler to look after randomisation of conditions etc
     practiceDecisionLoop = data.TrialHandler2(
         name='practiceDecisionLoop',
-        nReps=3.0, 
+        nReps=0.0, 
         method='random', 
         extraInfo=expInfo, 
         originPath=-1, 
@@ -4089,7 +4089,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             practiceDecisionLoop.status = STARTED
         thisExp.nextEntry()
         
-    # completed 3.0 repeats of 'practiceDecisionLoop'
+    # completed 0.0 repeats of 'practiceDecisionLoop'
     practiceDecisionLoop.status = FINISHED
     
     if thisSession is not None:
@@ -4416,11 +4416,15 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
     thisExp.addData('scannerSyncBlock3.stopped', scannerSyncBlock3.tStop)
     # Run 'End Routine' code from code_33
     # Create/reset scanner_clock when Block 3 scanner sync completes (user pressed 5)
+    # Store in both thisExp and globals for reliable persistence across trials
     try:
         import psychopy.core as psychopy_core
-        if 'scanner_clock' not in globals() or globals().get('scanner_clock') is None:
-            globals()['scanner_clock'] = psychopy_core.Clock()
-        globals()['scanner_clock'].reset()
+        clock = globals().get('scanner_clock') or getattr(thisExp, 'scanner_clock', None)
+        if clock is None:
+            clock = psychopy_core.Clock()
+        clock.reset()
+        globals()['scanner_clock'] = clock
+        thisExp.scanner_clock = clock
         print("[Block 3] Scanner clock created/reset for decision phase")
     except Exception as e:
         print(f"WARNING: Could not create scanner_clock: {e}")
@@ -4861,7 +4865,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
     # set up handler to look after randomisation of conditions etc
     decisionLoop = data.TrialHandler2(
         name='decisionLoop',
-        nReps=2.0, 
+        nReps=0.0, 
         method='sequential', 
         extraInfo=expInfo, 
         originPath=-1, 
@@ -4948,15 +4952,21 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             print(f"Decision {decision_index+1}: Showing {first_fruit} on {first_side} (2 seconds)")
         
             # Capture stimulus1 onset timestamp (scanner-relative)
-            # If scanner_clock doesn't exist (e.g. Day 2 runs decision-only), create and reset it
-            scanner_clock = globals().get('scanner_clock', None)
+            # Prefer globals (match day 1); scanner_clock reset only in scanner sync when user presses 5
+            from_globals = globals().get('scanner_clock', None)
+            from_exp = getattr(thisExp, 'scanner_clock', None)
+            scanner_clock = from_globals or from_exp
+            _src = "globals" if from_globals else ("thisExp" if from_exp else "None")
+            print(f"DEBUG stimulus1: decision_index={decision_index+1}, clock_source={_src}")
             if scanner_clock is None:
                 try:
                     import psychopy.core as psychopy_core
-                    globals()['scanner_clock'] = psychopy_core.Clock()
-                    scanner_clock = globals()['scanner_clock']
-                    scanner_clock.reset()
-                    print("WARNING: scanner_clock was not set — created new clock (times relative to first stimulus)")
+                    clock = psychopy_core.Clock()
+                    clock.reset()
+                    thisExp.scanner_clock = clock
+                    globals()['scanner_clock'] = clock
+                    scanner_clock = clock
+                    print("WARNING: scanner_clock was not set — created fallback (use scanner sync to reset)")
                 except Exception as e:
                     print(f"WARNING: Could not create scanner_clock: {e}")
             if scanner_clock is not None:
@@ -5189,10 +5199,10 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             text_15.opacity = 1
             text_15.setAutoDraw(True)
         
-        # Random duration: 1, 2, or 3 seconds
+        # Random duration: 1, 2, or 3 seconds - store in globals so decisionMakingEndRoutine can log actual duration
         iti1_duration = random.choice([1, 2, 3])
+        globals()['iti1_duration'] = iti1_duration
         print(f"ITI 1: {iti1_duration} seconds")
-        
         
         # store start times for decisionITI1
         decisionITI1.tStartRefresh = win.getFutureFlipTime(clock=globalClock)
@@ -5367,11 +5377,18 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             print(f"Decision {decision_index+1}: Showing {second_fruit} on {second_side} (2 seconds)")
         
             # Capture stimulus2 onset timestamp (scanner-relative)
-            scanner_clock = globals().get('scanner_clock', None)
+            # DEBUG: trace clock source (stimulus2_onset=0 often means wrong/reset clock)
+            from_exp = getattr(thisExp, 'scanner_clock', None)
+            from_globals = globals().get('scanner_clock', None)
+            scanner_clock = from_globals or from_exp  # Prefer globals (match day 1, learning)
+            _src = "globals" if from_globals else ("thisExp" if from_exp else "None")
+            print(f"DEBUG stimulus2: decision_index={decision_index+1}, clock_source={_src}, from_globals={from_globals is not None}, from_thisExp={from_exp is not None}")
             if scanner_clock is not None:
                 stimulus2_onset_time = scanner_clock.getTime()
                 globals()['stimulus2_onset_time'] = stimulus2_onset_time
-                print(f"Stimulus 2 onset: {stimulus2_onset_time:.4f}s since scanner sync")
+                print(f"Stimulus 2 onset: {stimulus2_onset_time:.4f}s since scanner sync (trial {decision_index+1})")
+                if stimulus2_onset_time < 0.1:
+                    print(f"DEBUG stimulus2: ONSET NEAR ZERO - check if scanner_clock was reset or is wrong clock")
             else:
                 globals()['stimulus2_onset_time'] = None
                 print("WARNING: scanner_clock not set — stimulus2_onset_time will be None")
@@ -5598,8 +5615,9 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             text_16.opacity = 1
             text_16.setAutoDraw(True)
         
-        # Random duration: 1, 2, or 3 seconds
+        # Random duration: 1, 2, or 3 seconds - store in globals so decisionMakingEndRoutine can log actual duration
         iti2_duration = random.choice([1, 2, 3])
+        globals()['iti2_duration'] = iti2_duration
         print(f"ITI 2: {iti2_duration} seconds")
         
         
@@ -5849,8 +5867,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             print(f"  Final positions: {leftFile} (left) vs {rightFile} (right), correct={correct}")
         
             # Capture both-fruits onset timestamp and reset choice_time (scanner-relative)
-            # Use decision_choice_time to match EndRoutine / log_decision_trial convention
-            scanner_clock = globals().get('scanner_clock', None)
+            scanner_clock = getattr(thisExp, 'scanner_clock', None) or globals().get('scanner_clock', None)
             if scanner_clock is not None:
                 both_fruits_onset_time = scanner_clock.getTime()
                 globals()['both_fruits_onset_time'] = both_fruits_onset_time
@@ -6121,7 +6138,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
                                 choice = "left"
                                 decision_rt = time.time() - decision_start_time
                                 decision_timed_out = False
-                                sc = globals().get('scanner_clock', None)
+                                sc = getattr(thisExp, 'scanner_clock', None) or globals().get('scanner_clock', None)
                                 decision_choice_time = sc.getTime() if sc else None
                                 globals()['choice'] = choice
                                 globals()['decision_rt'] = decision_rt
@@ -6140,7 +6157,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
                                 choice = "right"
                                 decision_rt = time.time() - decision_start_time
                                 decision_timed_out = False
-                                sc = globals().get('scanner_clock', None)
+                                sc = getattr(thisExp, 'scanner_clock', None) or globals().get('scanner_clock', None)
                                 decision_choice_time = sc.getTime() if sc else None
                                 globals()['choice'] = choice
                                 globals()['decision_rt'] = decision_rt
@@ -6161,7 +6178,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
                                 choice = "left"
                                 decision_rt = time.time() - decision_start_time
                                 decision_timed_out = False
-                                sc = globals().get('scanner_clock', None)
+                                sc = getattr(thisExp, 'scanner_clock', None) or globals().get('scanner_clock', None)
                                 decision_choice_time = sc.getTime() if sc else None
                                 globals()['choice'] = choice
                                 globals()['decision_rt'] = decision_rt
@@ -6173,7 +6190,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
                                 choice = "right"
                                 decision_rt = time.time() - decision_start_time
                                 decision_timed_out = False
-                                sc = globals().get('scanner_clock', None)
+                                sc = getattr(thisExp, 'scanner_clock', None) or globals().get('scanner_clock', None)
                                 decision_choice_time = sc.getTime() if sc else None
                                 globals()['choice'] = choice
                                 globals()['decision_rt'] = decision_rt
@@ -6356,20 +6373,25 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             print(f"Error logging decision data: {e}")
         
         # Calculate ITI 3 duration (crosshair after decision)
-        # Requirement:
-        # - ITI_3 should be 2/3/4 seconds on normal trials (do NOT subtract RT)
-        # - On timed-out trials, show timeout screen for 1.5s, then crosshair for (2/3/4 - 1.5)s
+        # Per stimulus diagram (same as day 1):
+        # - Response < 2s: crosshair = (2 - RT) + ITI_base  [remaining response window + base ITI 2/3/4]
+        # - No response: Time out screen, then crosshair = ITI_base - timeout_screen
         import random
         timeout_screen_duration = globals().get('TIMEOUT_SCREEN_DURATION', 1.5)
+        decision_response_limit = globals().get('DECISION_TIMEOUT_DURATION', 2.0)
         iti3_total_values = globals().get('DECISION_ITI3_VALUES', [2, 3, 4])
         iti3_total = random.choice(iti3_total_values)
+        iti3_base = iti3_total  # Base ITI (2/3/4 s) chosen for this trial
         
         if decision_timed_out:
-            iti3_duration = max(0.0, iti3_total - timeout_screen_duration)
-            print(f"ITI 3 (timeout): total={iti3_total}s, timeout_screen={timeout_screen_duration}s, crosshair={iti3_duration:.2f}s")
+            iti3_duration = max(0.0, float(iti3_total) - timeout_screen_duration)
+            iti3_remaining_response = 0.0
+            print(f"ITI 3 (timeout): crosshair={iti3_duration:.2f}s (ITI_base={iti3_base}s - timeout={timeout_screen_duration}s)")
         else:
-            iti3_duration = float(iti3_total)
-            print(f"ITI 3 (normal): crosshair={iti3_duration:.2f}s (no RT subtraction)")
+            # Crosshair = (2 - RT) + ITI_base  [fill remaining 2s window + base]
+            iti3_remaining_response = max(0.0, decision_response_limit - decision_rt_value)
+            iti3_duration = iti3_remaining_response + iti3_total
+            print(f"ITI 3 (responded): RT={decision_rt_value:.3f}s, (2-RT)={iti3_remaining_response:.3f}s + ITI_base={iti3_base}s = crosshair={iti3_duration:.3f}s")
         
         globals()['iti3_duration'] = iti3_duration
         
@@ -6388,6 +6410,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
         thisExp.addData("iti1_duration", iti1_duration)
         thisExp.addData("iti2_duration", iti2_duration)
         thisExp.addData("iti3_duration", iti3_duration)
+        thisExp.addData("iti3_base", iti3_base)
         thisExp.addData("decision_response_time", decision_rt_value)
         
         # Log decision trial to CSV (includes ITIs and timeout metadata)
@@ -6396,6 +6419,15 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             if data_logger:
                 decision_response_limit_s = globals().get('DECISION_TIMEOUT_DURATION', 2.0)
                 timeout_screen_duration_s = globals().get('decision_timeout_duration', 0.0)
+                s1 = globals().get('stimulus1_onset_time')
+                s2 = globals().get('stimulus2_onset_time')
+                both_ = globals().get('both_fruits_onset_time')
+                choice_t = globals().get('decision_choice_time')
+                iti3_crosshair_expected = iti3_base + (2000 - decision_rt_ms) / 1000.0 if not decision_timed_out else iti3_duration
+                print(f"DEBUG decisionMakingEnd: trial={decision_index+1} stim1={s1} stim2={s2} both={both_} choice_t={choice_t}")
+                print(f"DEBUG decisionMakingEnd: iti3_base={iti3_base} iti3_duration={iti3_duration} RT_ms={decision_rt_ms} formula_check={iti3_base}+(2000-{decision_rt_ms})/1000={iti3_crosshair_expected:.3f}")
+                if s2 is not None and s2 < 0.1:
+                    print(f"DEBUG decisionMakingEnd: stimulus2_onset NEAR ZERO - passed to log_decision_trial")
                 data_logger.log_decision_trial(
                     trial_num=decision_index + 1,
                     block_id=block_id,
@@ -6412,14 +6444,15 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
                     reaction_time_ms=decision_rt_ms,
                     iti1_duration=iti1_duration,
                     iti2_duration=iti2_duration,
+                    iti3_base=iti3_base,
                     iti3_duration=iti3_duration,
                     decision_timed_out=decision_timed_out,
                     decision_response_limit_s=decision_response_limit_s,
                     decision_timeout_screen_duration_s=timeout_screen_duration_s,
-                    stimulus1_onset_time=globals().get('stimulus1_onset_time'),
-                    stimulus2_onset_time=globals().get('stimulus2_onset_time'),
-                    both_fruits_onset_time=globals().get('both_fruits_onset_time'),
-                    choice_time=globals().get('decision_choice_time'),
+                    stimulus1_onset_time=s1,
+                    stimulus2_onset_time=s2,
+                    both_fruits_onset_time=both_,
+                    choice_time=choice_t,
                 )
         except Exception as e:
             print(f"Error logging decision data (with ITIs): {e}")
@@ -6676,20 +6709,12 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
         continueRoutine = True
         # update component parameters for each repeat
         # Run 'Begin Routine' code from code_15
-        # ITI 3 - Crosshair screen (duration: (2 - response_time) + rand(1,2,3))
-        # Component: text_17 (crosshair)
-        # Duration is calculated in decisionMakingEndRoutine as iti3_duration
-        
-        # Make sure iti3_duration exists (should be set in decisionMakingEndRoutine)
-        # If for some reason it doesn't exist, use a default
-        if 'iti3_duration' not in locals() and 'iti3_duration' not in globals():
-            import random
-            iti3_duration = random.choice([1, 2, 3]) + 1.0  # Default fallback
-            print("WARNING: iti3_duration not found, using default")
-        
-        # Ensure it's available in globals for Builder
-        if 'iti3_duration' in locals():
-            globals()['iti3_duration'] = iti3_duration
+        # ITI 3 - Crosshair screen (duration: (2-RT)+ITI when responded, full ITI when timed out)
+        # Duration is set in decisionMaking End Routine as iti3_duration
+        # NOTE: iti3_duration is in globals() - must read explicitly so Builder's $iti3_duration uses correct value each trial
+        iti3_duration = globals().get('iti3_duration', 2.0)
+        decision_timed_out = globals().get('decision_timed_out', False)
+        print(f"DEBUG ITI3 Begin: iti3_duration={iti3_duration:.3f} (from globals)")
         
         # Hide previous text and fruits
         if 'text_question_1' in locals():
@@ -6710,7 +6735,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             text_17.opacity = 1
             text_17.setAutoDraw(True)
         
-        print(f"Showing ITI 3 crosshair (duration: {iti3_duration if 'iti3_duration' in locals() or 'iti3_duration' in globals() else 'unknown'}s)")
+        print(f"ITI3 Begin: showing crosshair for iti3_duration={iti3_duration:.3f}s (timed_out={decision_timed_out})")
         
         
         # store start times for decisionITI3
@@ -6840,7 +6865,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             decisionLoop.status = STARTED
         thisExp.nextEntry()
         
-    # completed 2.0 repeats of 'decisionLoop'
+    # completed 0.0 repeats of 'decisionLoop'
     decisionLoop.status = FINISHED
     
     if thisSession is not None:
@@ -7725,7 +7750,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
     # set up handler to look after randomisation of conditions etc
     practiceTrials = data.TrialHandler2(
         name='practiceTrials',
-        nReps=3.0, 
+        nReps=0.0, 
         method='sequential', 
         extraInfo=expInfo, 
         originPath=-1, 
@@ -8570,7 +8595,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             practiceTrials.status = STARTED
         thisExp.nextEntry()
         
-    # completed 3.0 repeats of 'practiceTrials'
+    # completed 0.0 repeats of 'practiceTrials'
     practiceTrials.status = FINISHED
     
     if thisSession is not None:
@@ -8994,9 +9019,10 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
         thisExp.addData('key_resp_11.duration', key_resp_11.duration)
     # Run 'End Routine' code from code_21
     # Create/reset scanner_clock when Block 1 scanner sync completes (user pressed 5)
+    # Match day 1: globals only - create if not exists, else reset
     try:
         import psychopy.core as psychopy_core
-        if 'scanner_clock' not in globals() or globals().get('scanner_clock') is None:
+        if 'scanner_clock' not in globals() or globals()['scanner_clock'] is None:
             globals()['scanner_clock'] = psychopy_core.Clock()
         else:
             globals()['scanner_clock'].reset()
@@ -9674,17 +9700,22 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             pass
         
         # === LOG FRUIT ONSET TIMESTAMP (relative to scanner sync) ===
-        # If scanner_clock doesn't exist (e.g. Day 2 short flow), create and reset it
-        scanner_clock = globals().get('scanner_clock', None)
+        # scanner_clock is set/reset in scanner sync when user presses 5 (Block 1 and Block 2)
+        # Do NOT create a new clock here - that zeroes onset (e.g. Block 2 trial 1 getting ~0.02s)
+        scanner_clock = globals().get('scanner_clock', None) or getattr(thisExp, 'scanner_clock', None)
         if scanner_clock is None:
-            try:
-                import psychopy.core as psychopy_core
-                globals()['scanner_clock'] = psychopy_core.Clock()
-                scanner_clock = globals()['scanner_clock']
-                scanner_clock.reset()
-                print("WARNING: scanner_clock was not set — created new clock (times relative to first fruit)")
-            except Exception as e:
-                print(f"WARNING: Could not create scanner_clock: {e}")
+            # Only create fallback for Block 1 trial 1 (before first scanner sync); never for Block 2
+            if learning_block_index < trials_per_block:
+                try:
+                    import psychopy.core as psychopy_core
+                    globals()['scanner_clock'] = psychopy_core.Clock()
+                    scanner_clock = globals()['scanner_clock']
+                    scanner_clock.reset()
+                    print("WARNING: scanner_clock was not set — created fallback for Block 1 (use scanner sync to reset)")
+                except Exception as e:
+                    print(f"WARNING: Could not create scanner_clock: {e}")
+            else:
+                print("ERROR: scanner_clock is None for Block 2 — scanner sync should have set it. Fruit onset will be None.")
         if scanner_clock is not None:
             fruit_onset_time = scanner_clock.getTime()
         else:
@@ -9810,7 +9841,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
             
             for key in keys:
                 # Record first_response_time on first key 1 or 3 (scanner-relative timestamp)
-                scanner_clock = globals().get('scanner_clock', None)
+                scanner_clock = getattr(thisExp, 'scanner_clock', None) or globals().get('scanner_clock', None)
                 if scanner_clock and globals().get('first_response_logged') is not True:
                     if key in ('num_1', '1', 'num_3', '3'):
                         globals()['first_response_time'] = scanner_clock.getTime()
@@ -9848,7 +9879,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
                     import time
                     trial_start_time = globals().get('trial_start_time', time.time())
                     response_time = time.time() - trial_start_time
-                    scanner_clock = globals().get('scanner_clock', None)
+                    scanner_clock = getattr(thisExp, 'scanner_clock', None) or globals().get('scanner_clock', None)
                     if scanner_clock:
                         globals()['submit_time'] = scanner_clock.getTime()
             
@@ -11507,6 +11538,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
         should_skip = block2_setup_complete or not ready_for_scanner_sync_block2 or learning_block_index < trials_per_block - 1 or learning_block_index > trials_per_block
         print(f"DEBUG scannerSyncBlock2: should_skip = {should_skip}")
         if should_skip:
+            globals()['scanner_block2_was_shown'] = False
             # Skip this routine
             if block2_setup_complete:
                 print("Skipping scannerSyncBlock2 (block 2 setup already completed)")
@@ -11518,6 +11550,7 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
                 print(f"Skipping scannerSyncBlock2 (taskStartSoonBlock2 not completed yet, ready_for_scanner_sync_block2={ready_for_scanner_sync_block2})")
             continueRoutine = False
         else:
+            globals()['scanner_block2_was_shown'] = True
             # We're past the first block - show the scanner sync
             # Clear any previous key presses IMMEDIATELY to prevent carryover
             try:
@@ -11607,17 +11640,29 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
                 current_time = time.time()
                 
                 # Only process keys if at least 0.1 seconds have passed since routine started
-                # This prevents using keys that were pressed before the routine started
                 if current_time - routine_start_time >= 0.1:
                     try:
                         keys = event.getKeys(keyList=['5', 'num_5'])
                         if keys:
-                            # Scanner trigger received - continue to next screen
+                            # Reset scanner_clock IMMEDIATELY when "5" is pressed (timer starts here)
+                            # This ensures Block 2 trial 1 fruit_onset reflects time since "5", not 0
+                            import psychopy.core as psychopy_core
+                            sc = globals().get('scanner_clock', None)
+                            if sc is not None:
+                                sc.reset()
+                            else:
+                                sc = psychopy_core.Clock()
+                                globals()['scanner_clock'] = sc
+                                try:
+                                    thisExp.scanner_clock = sc
+                                except Exception:
+                                    pass
+                            print("[Block 2] Scanner clock reset at trigger '5' (timer started)")
                             print("Scanner sync Block 2: Trigger '5' received from MRI scanner, continuing")
                             continueRoutine = False
                             event.clearEvents()
-                    except:
-                        pass
+                    except Exception as e:
+                        print(f"WARNING scannerSyncBlock2 EachFrame: {e}")
             
             
             
@@ -11712,17 +11757,33 @@ def run(expInfo, thisExp, win, globalClock=None, thisSession=None):
         scannerSyncBlock2.tStopRefresh = tThisFlipGlobal
         thisExp.addData('scannerSyncBlock2.stopped', scannerSyncBlock2.tStop)
         # Run 'End Routine' code from code_25
-        # Reset scanner_clock when Block 2 scanner sync completes (user pressed 5)
-        try:
-            import psychopy.core as psychopy_core
-            scanner_clock = globals().get('scanner_clock', None)
-            if scanner_clock is not None:
-                scanner_clock.reset()
-            else:
-                globals()['scanner_clock'] = psychopy_core.Clock()
-            print("[Block 2] Scanner clock reset at trigger '5'")
-        except Exception as e:
-            print(f"WARNING: Could not reset scanner_clock: {e}")
+        # Block 2 scanner sync cleanup (clock already reset in EachFrame when "5" pressed)
+        # Match day 1: cleanup + ensure clock exists
+        scanner_block2_was_shown = globals().get('scanner_block2_was_shown', False)
+        
+        if scanner_block2_was_shown:
+            if 'text_scanner_wait_block2' in locals():
+                text_scanner_wait_block2.setAutoDraw(False)
+                text_scanner_wait_block2.opacity = 0
+            try:
+                event.clearEvents()
+            except:
+                pass
+            globals()['block2_setup_complete'] = True
+            globals()['scanner_block2_was_shown'] = False
+            print("Block 2 scanner sync complete")
+            # Clock was reset in EachFrame when "5" was pressed; ensure it exists as backup
+            if globals().get('scanner_clock', None) is None:
+                import psychopy.core as psychopy_core
+                sc = psychopy_core.Clock()
+                globals()['scanner_clock'] = sc
+                try:
+                    thisExp.scanner_clock = sc
+                except Exception:
+                    pass
+                print("[Block 2] Scanner clock created in EndRoutine (backup)")
+        else:
+            print("scannerSyncBlock2 end routine: routine was skipped, doing nothing")
         
         # check responses
         if key_resp_13.keys in ['', [], None]:  # No response was made
